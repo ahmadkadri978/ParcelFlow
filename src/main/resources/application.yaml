@@ -1,3 +1,11 @@
 spring:
   application:
     name: parcelflow
+
+  datasource:
+    url: ${DB_URL:jdbc:postgresql://localhost:5432/parcelflow}
+    username: ${DB_USERNAME:parcelflow}
+    password: ${DB_PASSWORD}
+
+  flyway:
+    enabled: true
