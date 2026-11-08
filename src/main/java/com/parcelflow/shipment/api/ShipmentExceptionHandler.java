@@ -1,5 +1,7 @@
 package com.parcelflow.shipment.api;
 
+import com.parcelflow.shipment.ShipmentNotFoundException;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -47,6 +49,21 @@ public class ShipmentExceptionHandler {
         );
 
         return ResponseEntity.badRequest().body(response);
+    }
+
+    @ExceptionHandler(ShipmentNotFoundException.class)
+    public ResponseEntity<ApiError> handleShipmentNotFound(
+            ShipmentNotFoundException exception
+    ) {
+
+        ApiError response = new ApiError(
+                exception.getMessage(),
+                Map.of()
+        );
+
+        return ResponseEntity
+                .status(HttpStatus.NOT_FOUND)
+                .body(response);
     }
 
     public record ApiError(

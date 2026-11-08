@@ -1,5 +1,8 @@
 package com.parcelflow.shipment;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -48,6 +51,41 @@ public class ShipmentService {
         // 4. Save the shipment
         return shipmentRepository.save(shipment);
     }
+    @Transactional(readOnly = true)
+    public Shipment getShipmentById(UUID id) {
+        return  shipmentRepository.findById(id)
+                .orElseThrow(() -> new ShipmentNotFoundException("Shipment with id: " + id + " not found"));
+    }
+    @Transactional(readOnly = true)
+    public Shipment getShipmentByTrackingNumber(String trackingNumber) {
+
+        if (trackingNumber == null || trackingNumber.isBlank()) {
+            throw new IllegalArgumentException("tracking Number is required");
+        }
+        String cleanedNumber = trackingNumber.trim();
+
+        return shipmentRepository
+                .findByTrackingNumber(cleanedNumber)
+                .orElseThrow(() -> new ShipmentNotFoundException("Shipment with id: " + cleanedNumber + " not found"));
+    }
+    @Transactional(readOnly = true)
+    public Page<Shipment> getShipments(int page, int size) {
+        if (page < 0) {
+            throw new IllegalArgumentException("Page number must be zero or greater");
+        }
+        if (size < 1 || size > 100) {
+            throw new IllegalArgumentException("Size must be between 1 and 100");
+        }
+        Sort sort = Sort.by(
+                Sort.Order.desc("createdAt"),
+                Sort.Order.desc("id")
+        );
+        PageRequest pageRequest = PageRequest.of(page, size, sort);
+        return shipmentRepository.findAll(pageRequest);
+
+    }
+
+
 
     private String generateTrackingNumber() {
         return "PF-" + UUID.randomUUID();
