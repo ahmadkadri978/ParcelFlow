@@ -27,11 +27,19 @@ Later, I plan to add RabbitMQ for background event processing and Kubernetes for
 
 ## Current status
 
-Planning the first version. The application code has not been added yet.
+The shipment API supports creating shipments, finding them by ID
+or tracking number, and listing them with pagination.
+
+The backend uses Spring Boot, PostgreSQL, Spring Data JPA,
+and Flyway. Automated tests include JUnit, MockMvc,
+and Testcontainers.
+
+Tracking events and background processing will be added later.
 
 ## Design notes
 
 - [Basic architecture](docs/architecture.md)
 - [Shipment status flow](docs/shipment-flow.md)
+- [Shipment API](docs/api.md)
 
 The design may change as I build and test the application.
