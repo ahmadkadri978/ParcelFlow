@@ -84,6 +84,26 @@ public class ShipmentService {
         return shipmentRepository.findAll(pageRequest);
 
     }
+    @Transactional
+    public Shipment updateShipmentStatus(
+            UUID shipmentId,
+            ShipmentStatus nextStatus
+    ) {
+
+        Shipment shipment = shipmentRepository
+                .findById(shipmentId)
+                .orElseThrow(() ->
+                        new ShipmentNotFoundException(
+                                "Shipment with id: "
+                                        + shipmentId
+                                        + " not found"
+                        )
+                );
+
+        shipment.transitionTo(nextStatus);
+
+        return shipment;
+    }
 
 
 

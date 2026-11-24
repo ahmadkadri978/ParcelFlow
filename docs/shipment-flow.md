@@ -12,6 +12,24 @@ stateDiagram-v2
     DELIVERED --> [*]
 ```
 
-For now, I plan to allow only the next status in the flow. For example, a shipment cannot go directly from `CREATED` to `DELIVERED`.
+## Status transition rules
 
-Later I can decide how to handle cancelled shipments, failed deliveries, and events that arrive out of order.
+The application now enforces shipment status transitions
+inside the Shipment entity.
+
+Only the next status in the lifecycle is allowed.
+
+For example, a shipment in CREATED can move to PICKED_UP,
+but it cannot move directly to DELIVERED.
+
+Backward transitions, repeated statuses, and changes after
+DELIVERED are rejected.
+
+These rules are implemented in ShipmentStatus and Shipment.
+
+The Service performs status changes inside a database transaction.
+
+The REST endpoint for changing status and the tracking event
+history are not implemented yet.
+
+Handling duplicate and out-of-order events will be added later.

@@ -85,6 +85,19 @@ public class Shipment {
         this.updatedAt = Instant.now();
     }
 
+    //The Entity checks the transition before changing its status
+    public void transitionTo(ShipmentStatus nextStatus) {
+
+        if (!status.canTransitionTo(nextStatus)) {
+            throw new InvalidShipmentStatusTransitionException(
+                    status,
+                    nextStatus
+            );
+        }
+
+        this.status = nextStatus;
+    }
+
     public UUID getId() {
         return id;
     }
