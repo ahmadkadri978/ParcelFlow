@@ -69,4 +69,20 @@ public class ShipmentController {
                 ShipmentPageResponse.from(shipments)
         );
     }
+
+    @PatchMapping("/{id}/status")
+    public ResponseEntity<ShipmentResponse> updateShipmentStatus(
+            @PathVariable UUID id,
+            @Valid @RequestBody UpdateShipmentStatusRequest request
+    ) {
+
+        Shipment updatedShipment = shipmentService.updateShipmentStatus(
+                id,
+                request.status()
+        );
+
+        return ResponseEntity.ok(
+                ShipmentResponse.from(updatedShipment)
+        );
+    }
 }

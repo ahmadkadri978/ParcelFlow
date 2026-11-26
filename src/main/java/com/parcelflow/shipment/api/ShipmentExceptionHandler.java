@@ -7,6 +7,8 @@ import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.validation.FieldError;
+import com.parcelflow.shipment.InvalidShipmentStatusTransitionException;
+import org.springframework.http.converter.HttpMessageNotReadableException;
 
 import java.util.LinkedHashMap;
 import java.util.Map;
@@ -64,6 +66,34 @@ public class ShipmentExceptionHandler {
         return ResponseEntity
                 .status(HttpStatus.NOT_FOUND)
                 .body(response);
+    }
+
+    @ExceptionHandler(InvalidShipmentStatusTransitionException.class)
+    public ResponseEntity<ApiError> handleInvalidStatusTransition(
+            InvalidShipmentStatusTransitionException exception
+    ) {
+
+        ApiError response = new ApiError(
+                exception.getMessage(),
+                Map.of()
+        );
+
+        return ResponseEntity
+                .status(HttpStatus.CONFLICT)
+                .body(response);
+    }
+
+    @ExceptionHandler(HttpMessageNotReadableException.class)
+    public ResponseEntity<ApiError> handleInvalidRequestBody(
+            HttpMessageNotReadableException exception
+    ) {
+
+        ApiError response = new ApiError(
+                "Invalid request body",
+                Map.of()
+        );
+
+        return ResponseEntity.badRequest().body(response);
     }
 
     public record ApiError(

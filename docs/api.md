@@ -113,16 +113,63 @@ Shipments are sorted by creation date (newest first), then by ID.
 
 The `content` array can be empty when no shipments are found.
 
+
+## 5. Update shipment status
+
+**PATCH** `/api/v1/shipments/{id}/status`
+
+Changes the status of an existing shipment.
+
+Request body:
+
+```json
+{
+  "status": "PICKED_UP"
+}
+```
+
+A successful request returns **200 OK** with the updated shipment.
+
+Allowed transitions:
+
+```text
+CREATED -> PICKED_UP
+PICKED_UP -> IN_TRANSIT
+IN_TRANSIT -> OUT_FOR_DELIVERY
+OUT_FOR_DELIVERY -> DELIVERED
+```
+
+Only the next status is allowed. Repeated statuses, backward
+transitions, and skipped statuses are rejected.
+
+An invalid transition returns **409 Conflict**:
+
+```json
+{
+  "message": "Cannot change shipment status from CREATED to DELIVERED",
+  "fieldErrors": {}
+}
+```
+
+An unknown shipment returns **404 Not Found**.
+
+A missing status or unsupported enum value returns **400 Bad Request**.
+
+This endpoint currently changes only the shipment's latest status.
+Historical tracking events will be added in later commits.
+
+
 ## 5. Error responses
 
 The API uses these HTTP status codes:
 
-| Status | Meaning |
-|---|---|
-| 200 OK | Request completed successfully |
-| 201 Created | A new shipment was created |
+| Status          | Meaning |
+|-----------------|---|
+| 200 OK          | Request completed successfully |
+| 201 Created     | A new shipment was created |
 | 400 Bad Request | Invalid request data or pagination parameters |
-| 404 Not Found | Requested shipment does not exist |
+| 404 Not Found   | Requested shipment does not exist |
+| 409 Conflict  | An invalid transition |
 
 Example validation error:
 
@@ -178,8 +225,8 @@ Integration tests use Testcontainers to run PostgreSQL in a temporary container.
 
 ## 7. Current limitations
 
-The current API supports shipment creation and retrieval.
+Shipment creation, retrieval, pagination, and controlled status
+updates are implemented.
 
-Tracking events and status updates are not implemented yet. They will be added in later commits.
-
-Authentication and authorization are also not implemented yet. The API is intended for local development and should not be exposed publicly with real customer data.
+Tracking event history, asynchronous processing, and authentication
+are not implemented yet.

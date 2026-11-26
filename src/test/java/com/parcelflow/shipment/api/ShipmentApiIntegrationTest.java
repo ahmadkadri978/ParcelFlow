@@ -2,6 +2,7 @@ package com.parcelflow.shipment.api;
 
 import com.parcelflow.shipment.Shipment;
 import com.parcelflow.shipment.ShipmentRepository;
+import com.parcelflow.shipment.ShipmentStatus;
 import com.parcelflow.support.PostgresTestConfiguration;
 
 import org.junit.jupiter.api.AfterEach;
@@ -106,5 +107,75 @@ class ShipmentApiIntegrationTest {
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.id")
                         .value(shipmentId.toString()));
+    }
+
+    @Test
+    void shouldUpdateStatusAndRejectInvalidTransition()
+            throws Exception {
+
+        // Create a shipment in PostgreSQL
+        Shipment shipment = new Shipment(
+                "PF-" + UUID.randomUUID(),
+                "John Smith",
+                "Berlin",
+                "Hamburg"
+        );
+
+        Shipment saved = shipmentRepository.saveAndFlush(shipment);
+
+        UUID id = saved.getId();
+        long initialVersion = saved.getVersion();
+
+        // Update CREATED -> PICKED_UP through the API
+        mockMvc.perform(
+                        patch("/api/v1/shipments/{id}/status", id)
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .content("""
+                                    {"status": "PICKED_UP"}
+                                    """)
+                )
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.status")
+                        .value("PICKED_UP"));
+
+        // Verify the change was saved in PostgreSQL
+        Shipment updated = shipmentRepository
+                .findById(id)
+                .orElseThrow();
+
+        assertEquals(
+                ShipmentStatus.PICKED_UP,
+                updated.getStatus()
+        );
+
+        assertEquals(
+                initialVersion + 1,
+                updated.getVersion().longValue()
+        );
+
+        // Trying an invalid transition: PICKED_UP -> DELIVERED
+        mockMvc.perform(
+                        patch("/api/v1/shipments/{id}/status", id)
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .content("""
+                                    {"status": "DELIVERED"}
+                                    """)
+                )
+                .andExpect(status().isConflict());
+
+        // Verify the invalid transition changed nothing
+        Shipment unchanged = shipmentRepository
+                .findById(id)
+                .orElseThrow();
+
+        assertEquals(
+                ShipmentStatus.PICKED_UP,
+                unchanged.getStatus()
+        );
+
+        assertEquals(
+                initialVersion + 1,
+                unchanged.getVersion().longValue()
+        );
     }
 }
