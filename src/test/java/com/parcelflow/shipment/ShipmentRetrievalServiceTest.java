@@ -22,12 +22,14 @@ class ShipmentRetrievalServiceTest {
 
     @Mock
     private ShipmentRepository shipmentRepository;
+    @Mock
+    private ShipmentEventRepository shipmentEventRepository;
 
     private ShipmentService shipmentService;
 
     @BeforeEach
     void setUp() {
-        shipmentService = new ShipmentService(shipmentRepository);
+        shipmentService = new ShipmentService(shipmentRepository, shipmentEventRepository);
     }
 
     @Test

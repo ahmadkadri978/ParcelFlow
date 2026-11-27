@@ -12,18 +12,21 @@ import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
+import org.springframework.test.util.ReflectionTestUtils;
 
 @ExtendWith(MockitoExtension.class)
 class ShipmentStatusServiceTest {
 
     @Mock
     private ShipmentRepository shipmentRepository;
+    @Mock
+    private ShipmentEventRepository shipmentEventRepository;
 
     private ShipmentService shipmentService;
 
     @BeforeEach
     void setUp() {
-        shipmentService = new ShipmentService(shipmentRepository);
+        shipmentService = new ShipmentService(shipmentRepository, shipmentEventRepository);
     }
 
     @Test
@@ -37,6 +40,7 @@ class ShipmentStatusServiceTest {
                 "Berlin",
                 "Hamburg"
         );
+        ReflectionTestUtils.setField(shipment, "version", 0L);
 
         when(shipmentRepository.findById(shipmentId))
                 .thenReturn(Optional.of(shipment));
@@ -50,6 +54,8 @@ class ShipmentStatusServiceTest {
         assertEquals(ShipmentStatus.PICKED_UP, result.getStatus());
 
         verify(shipmentRepository).findById(shipmentId);
+        verify(shipmentEventRepository)
+                .save(any(ShipmentEvent.class));
     }
 
     @Test

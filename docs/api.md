@@ -155,11 +155,14 @@ An unknown shipment returns **404 Not Found**.
 
 A missing status or unsupported enum value returns **400 Bad Request**.
 
-This endpoint currently changes only the shipment's latest status.
-Historical tracking events will be added in later commits.
+The API stores tracking events internally when shipments
+are created or their statuses change.
+
+A REST endpoint for retrieving tracking history is not yet
+available.
 
 
-## 5. Error responses
+## 6. Error responses
 
 The API uses these HTTP status codes:
 
@@ -169,7 +172,7 @@ The API uses these HTTP status codes:
 | 201 Created     | A new shipment was created |
 | 400 Bad Request | Invalid request data or pagination parameters |
 | 404 Not Found   | Requested shipment does not exist |
-| 409 Conflict  | An invalid transition |
+| 409 Conflict    | An invalid transition |
 
 Example validation error:
 
@@ -193,7 +196,7 @@ Example error for an unknown shipment ID:
 
 Some malformed requests, such as an invalid UUID format, may use Spring's default error response instead of this JSON structure.
 
-## 6. Testing the API
+## 7. Testing the API
 
 The application needs PostgreSQL running locally.
 
@@ -223,10 +226,10 @@ To run automated tests, start Docker Desktop and execute:
 
 Integration tests use Testcontainers to run PostgreSQL in a temporary container.
 
-## 7. Current limitations
+## 8. Current limitations
 
-Shipment creation, retrieval, pagination, and controlled status
-updates are implemented.
+Shipment creation, retrieval, pagination, controlled status
+updates, and internal tracking event persistence are implemented.
 
-Tracking event history, asynchronous processing, and authentication
-are not implemented yet.
+A REST endpoint for retrieving tracking history, asynchronous
+processing, and authentication are not implemented yet.

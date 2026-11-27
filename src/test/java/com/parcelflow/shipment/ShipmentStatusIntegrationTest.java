@@ -8,6 +8,7 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.context.annotation.Import;
+import com.parcelflow.shipment.ShipmentEventRepository;
 
 import java.util.UUID;
 
@@ -22,10 +23,15 @@ class ShipmentStatusIntegrationTest {
 
     @Autowired
     private ShipmentService shipmentService;
+    @Autowired
+    private ShipmentEventRepository shipmentEventRepository;
 
     @AfterEach
     void cleanUp() {
-        shipmentRepository.deleteAll();
+
+        shipmentEventRepository.deleteAllInBatch();
+
+        shipmentRepository.deleteAllInBatch();
     }
 
     @Test

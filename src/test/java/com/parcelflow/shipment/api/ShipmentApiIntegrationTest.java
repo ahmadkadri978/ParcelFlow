@@ -22,6 +22,7 @@ import static org.junit.jupiter.api.Assertions.*;
 
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
+import com.parcelflow.shipment.ShipmentEventRepository;
 
 @SpringBootTest(properties = "DB_PASSWORD=unused")
 @AutoConfigureMockMvc
@@ -33,10 +34,15 @@ class ShipmentApiIntegrationTest {
 
     @Autowired
     private ShipmentRepository shipmentRepository;
+    @Autowired
+    private ShipmentEventRepository shipmentEventRepository;
 
     @AfterEach
     void cleanUp() {
-        shipmentRepository.deleteAll();
+
+        shipmentEventRepository.deleteAllInBatch();
+
+        shipmentRepository.deleteAllInBatch();
     }
 
     @Test

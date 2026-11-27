@@ -8,6 +8,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import java.util.Optional;
 import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -19,12 +20,14 @@ class ShipmentServiceTest {
 
     @Mock
     private ShipmentRepository shipmentRepository;
+    @Mock
+    private ShipmentEventRepository shipmentEventRepository;
 
     private ShipmentService shipmentService;
 
     @BeforeEach
     void setUp() {
-        shipmentService = new ShipmentService(shipmentRepository);
+        shipmentService = new ShipmentService(shipmentRepository, shipmentEventRepository);
     }
 
     @Test
@@ -57,6 +60,8 @@ class ShipmentServiceTest {
         UUID.fromString(result.getTrackingNumber().substring(3));
 
         verify(shipmentRepository).save(any(Shipment.class));
+        verify(shipmentEventRepository)
+                .save(any(ShipmentEvent.class));
     }
 
     @Test
@@ -122,4 +127,6 @@ class ShipmentServiceTest {
 
         verifyNoInteractions(shipmentRepository);
     }
+
+
 }

@@ -12,9 +12,11 @@ import java.util.UUID;
 public class ShipmentService {
 
     private final ShipmentRepository shipmentRepository;
+    private final ShipmentEventRepository shipmentEventRepository;
 
-    public ShipmentService(ShipmentRepository shipmentRepository) {
+    public ShipmentService(ShipmentRepository shipmentRepository, ShipmentEventRepository shipmentEventRepository) {
         this.shipmentRepository = shipmentRepository;
+        this.shipmentEventRepository = shipmentEventRepository;
     }
 
     @Transactional
@@ -49,7 +51,12 @@ public class ShipmentService {
         );
 
         // 4. Save the shipment
-        return shipmentRepository.save(shipment);
+        Shipment savedShipment = shipmentRepository.save(shipment);
+
+        shipmentEventRepository.save(
+                ShipmentEvent.created(savedShipment)
+        );
+        return savedShipment;
     }
     @Transactional(readOnly = true)
     public Shipment getShipmentById(UUID id) {
@@ -99,8 +106,23 @@ public class ShipmentService {
                                         + " not found"
                         )
                 );
+        ShipmentStatus previousStatus = shipment.getStatus();
 
         shipment.transitionTo(nextStatus);
+        // The next accepted transition uses the next version
+        long nextSequence = shipment.getVersion() + 1L;
+
+        // Execute the UPDATE and optimistic-lock version check
+        shipmentRepository.flush();
+        // Record the historical transition
+        ShipmentEvent event = ShipmentEvent.statusChanged(
+                shipment,
+                previousStatus,
+                nextStatus,
+                nextSequence
+        );
+
+        shipmentEventRepository.save(event);
 
         return shipment;
     }

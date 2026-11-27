@@ -12,24 +12,24 @@ stateDiagram-v2
     DELIVERED --> [*]
 ```
 
-## Status transition rules
+## Tracking event persistence
 
-The application now enforces shipment status transitions
-inside the Shipment entity.
+Shipment creation and accepted status transitions now create
+records in the shipment_events table.
 
-Only the next status in the lifecycle is allowed.
+Each event contains its previous status, new status,
+event type, sequence number, and timestamp.
 
-For example, a shipment in CREATED can move to PICKED_UP,
-but it cannot move directly to DELIVERED.
+The ShipmentService saves the current state and tracking
+event within the same database transaction.
 
-Backward transitions, repeated statuses, and changes after
-DELIVERED are rejected.
+Sequence numbers follow shipment versions.
 
-These rules are implemented in ShipmentStatus and Shipment.
+Existing shipments receive a BASELINE event during the
+V2 migration. This is a snapshot, not reconstructed history.
 
-The Service performs status changes inside a database transaction.
+The status update REST endpoint is available.
 
-The REST endpoint for changing status and the tracking event
-history are not implemented yet.
-
-Handling duplicate and out-of-order events will be added later.
+Retrieving tracking history through the API is not yet
+implemented. Duplicate event detection, out-of-order
+processing, and RabbitMQ integration are planned.
